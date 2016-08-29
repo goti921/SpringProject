@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+       xsi:schemaLocation="
+			http://www.springframework.org/schema/beans
+			http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/tx
+			http://www.springframework.org/schema/tx/spring-tx.xsd
+			http://www.springframework.org/schema/data/jpa
+   			http://www.springframework.org/schema/data/jpa/spring-jpa.xsd">
+
+    <tx:annotation-driven order="10" transaction-manager="transactionManager" proxy-target-class="true"/>
+
+    <!-- Activate Spring Data JPA repository support -->
+    <jpa:repositories base-package="com.payumoney.misc.repository"
+                      entity-manager-factory-ref="entityManagerFactory" transaction-manager-ref="transactionManager"/>
+
+    <!-- Declare a datasource that has pooling capabilities-->
+    <bean id="jpaDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+          destroy-method="close"
+          p:driverClass="com.mysql.jdbc.Driver"
+          p:jdbcUrl="${app.jdbc.misc.url}"
+          p:user="${app.jdbc.misc.user}"
+          p:password="${app.jdbc.misc.password}"
+          p:acquireIncrement="5"
+          p:maxIdleTimeExcessConnections="20"
+          p:idleConnectionTestPeriod="300"
+          p:maxConnectionAge="3600"
+          p:maxPoolSize="100"
+          p:maxIdleTime="1800"
+          p:maxStatements="2000"
+          p:minPoolSize="3"
+          p:statementCacheNumDeferredCloseThreads="1"
+          p:numHelperThreads="15"
+          p:preferredTestQuery="SELECT 1"/>
+    <!-- Declare a JPA entityManagerFactory -->
+
+    <bean id="entityManagerFactory"
+          class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="persistenceUnitManager" ref="pum"/>
+        <property name="persistenceUnitName" value="hibernatePersistenceUnit"/>
+        <property name="jpaVendorAdapter" ref="hibernateVendor"/>
+        <property name="dataSource" ref="jpaDataSource"/>
+    </bean>
+
+    <bean id="pum" class="org.springframework.orm.jpa.persistenceunit.DefaultPersistenceUnitManager">
+        <property name="persistenceXmlLocations">
+            <list>
+                <value>./WEB-INF/persistence.xml</value>
+            </list>
+        </property>
+        <property name="dataSources">
+            <map>
+                <entry key="jpaDataSource" value-ref="jpaDataSource"/>
+            </map>
+        </property>
+        <property name="defaultDataSource" ref="jpaDataSource"/>
+    </bean>
+
+    <!-- Specify our ORM vendor -->
+    <bean id="hibernateVendor" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter"
+          p:showSql="false"/>
+
+    <!-- Declare a transaction manager-->
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager"
+          p:entityManagerFactory-ref="entityManagerFactory"/>
+
+</beans>
