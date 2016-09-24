@@ -2,8 +2,8 @@
 <Configuration>
     <Appenders>
 
-        <RollingFile name="FILE" fileName="${sys:catalina.home}/logs/miscLogs.log"
-                     filePattern="${sys:catalina.home}/logs/$${date:yyyy-MM}/miscLogs-%d{MM-dd-yyyy}-%i">
+        <RollingFile name="FILE" fileName="${sys:catalina.home}/logs/storecarcLogs.log"
+                     filePattern="${sys:catalina.home}/logs/$${date:yyyy-MM}/storecarcLogs-%d{MM-dd-yyyy}-%i">
             <PatternLayout>
                 <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p %c{1}:%L - %X{sessionId}--%X{guid}- %m#]%n</Pattern>
             </PatternLayout>
