@@ -2,6 +2,7 @@ package com.payu.storecard.dao;
 
 import com.payu.storecard.dto.CardDetailDTO;
 import com.payu.storecard.model.Card;
+import com.payu.storecard.model.CardBackUp;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
 
@@ -18,10 +19,20 @@ public class GenericDataDao extends JdbcDaoSupport {
 
     public List<Card> findCardsForUserWithoutCardToken(CardDetailDTO cardDetailDTO) {
         return getJdbcTemplate().query(findCardsForUserWithoutCardTokenQuery, new Object[]{cardDetailDTO.getMerchantId(),
-        cardDetailDTO.getMerchantUserId(), cardDetailDTO.getAuthService()}, cardsForUserWithoutCardTokenRowMapper);
+        cardDetailDTO.getMerchantUserId(), cardDetailDTO.getAuthService()}, cardRowMapper);
     }
 
-    RowMapper cardsForUserWithoutCardTokenRowMapper = new RowMapper() {
+    public Card findCardsForUserWithCardToken(CardDetailDTO cardDetailDTO) {
+        return (Card) getJdbcTemplate().queryForObject(findCardsForUserWithCardTokenQuery, new Object[]{cardDetailDTO.getMerchantId(),
+                cardDetailDTO.getMerchantUserId(), cardDetailDTO.getAuthService()}, cardRowMapper);
+    }
+
+    public CardBackUp findBackUpCardForUserWithCardToken(CardDetailDTO cardDetailDTO) {
+        return (CardBackUp) getJdbcTemplate().queryForObject(findCardsForUserWithCardTokenQuery, new Object[]{cardDetailDTO.getMerchantId(),
+                cardDetailDTO.getMerchantUserId(), cardDetailDTO.getAuthService()}, backUpCardRowMapper);
+    }
+
+    RowMapper cardRowMapper = new RowMapper() {
 
         @Override
         public Card mapRow(ResultSet rs, int i) throws SQLException {
@@ -41,4 +52,26 @@ public class GenericDataDao extends JdbcDaoSupport {
             return card;
         }
     };
+
+    RowMapper backUpCardRowMapper = new RowMapper() {
+
+        @Override
+        public CardBackUp mapRow(ResultSet rs, int i) throws SQLException {
+            CardBackUp cardBackUp = new CardBackUp();
+            cardBackUp.setStatus(rs.getString("status"));
+            cardBackUp.setAddedOn(rs.getDate("addedOn"));
+            cardBackUp.setCardMode(rs.getString("card_mode"));
+            cardBackUp.setCardName(rs.getString("card_name"));
+            cardBackUp.setCardToken(rs.getString("card_token"));
+            cardBackUp.setCardType(rs.getString("card_type"));
+            cardBackUp.setEncryptedCardCvv(rs.getString("encrypted_card_cvv"));
+            cardBackUp.setEncryptedCardExpiryMon(rs.getString("encrypted_card_expiry_mon"));
+            cardBackUp.setEncryptedCardExpiryYr(rs.getString("encrypted_card_expiry_yr"));
+            cardBackUp.setEncryptedCardNo(rs.getString("encrypted_card_no"));
+            cardBackUp.setEncryptedNameonCard(rs.getString("encrypted_name_on_card"));
+            cardBackUp.setId(rs.getInt("id"));
+            return cardBackUp;
+        }
+    };
+
 }

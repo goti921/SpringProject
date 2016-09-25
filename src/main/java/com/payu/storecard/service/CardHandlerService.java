@@ -1,11 +1,14 @@
 package com.payu.storecard.service;
 
 import com.payu.storecard.Util.CryptoUtil;
+import com.payu.storecard.Util.HashUtil;
 import com.payu.storecard.Util.StoreCardUtil;
 import com.payu.storecard.constants.CardConstant;
 import com.payu.storecard.dao.GenericDataDao;
 import com.payu.storecard.dto.CardDetailDTO;
+import com.payu.storecard.dto.ResultDTO;
 import com.payu.storecard.model.Card;
+import com.payu.storecard.model.CardBackUp;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
@@ -26,21 +29,35 @@ public class CardHandlerService {
     @Autowired
     private GenericDataDao genericDataDao;
 
-    public void getCardDetails(CardDetailDTO cardDetailDTO) {
+    public ResultDTO getCardDetails(CardDetailDTO cardDetailDTO) {
         JSONObject merchantKeysJson = (null != cardDetailDTO.getMerchantKeys()) ? new JSONObject(cardDetailDTO.getMerchantKeys()) :
                 null;
         List merchantIds = Arrays.asList(cardDetailDTO.getMerchantId().split("\\s*,\\s*"));
         String cardToken = this.getCardToken(cardDetailDTO);
         if(null != cardToken) {
             //Directly fetch card details corresponding to the token
+            Card card = genericDataDao.findCardsForUserWithCardToken(cardDetailDTO);
+            if(null != card) {
+                //Just return
+                return new ResultDTO(ResultDTO.SUCCESS, "Card found for given card token", card);
+            } else {
+                //Look up for card in back up table
+                CardBackUp cardBackUp = genericDataDao.findBackUpCardForUserWithCardToken(cardDetailDTO);
+                if(null != cardBackUp) {
+
+                } else {
+                    return new ResultDTO(ResultDTO.FAILURE, "No card found");
+                }
+            }
         } else {
             //Fetch all card details for the given non-null parameters
             List<Card> userCardList = genericDataDao.findCardsForUserWithoutCardToken(cardDetailDTO);
             if(userCardList.isEmpty()) {
                 //return failure : No card found
+                return new ResultDTO(ResultDTO.FAILURE, "No card found");
             } else {
                 //extract details from list and return
-                this.extractCardDetails(userCardList, cardDetailDTO);
+                return new ResultDTO(ResultDTO.SUCCESS, "Card details found", this.extractCardDetails(userCardList, cardDetailDTO));
             }
         }
 
@@ -59,9 +76,14 @@ public class CardHandlerService {
             userCardMap.put(CardConstant.IS_EXPIRED_KEY, BooleanUtils.toInteger(StoreCardUtil.isCardExpired(card.getCardExpiryMon(), card.getCardExpiryYr())));
             userCardMap.put(CardConstant.EXPIRY_YEAR_KEY, card.getCardExpiryYr());
             userCardMap.put(CardConstant.EXPIRY_MONTH_KEY, card.getCardExpiryMon());
-            userCardMap.put(CardConstant.CARD_CVV_KEY, BooleanUtils.toInteger())
+            userCardMap.put(CardConstant.CARD_CVV_KEY, BooleanUtils.toInteger(StringUtils.isNotBlank(card.getEncryptedCardCvv())));
+            if(StringUtils.isNotEmpty(cardDetailDTO.getHashes())) {
+                userCardMap.put(CardConstant.CARD_NUM_SHA1_KEY, HashUtil.getSHA1Hash(card.getCardNo()));
+                userCardMap.put(CardConstant.CARD_NUM_SHA2_KEY, HashUtil.getSHA256Hash(card.getCardNo()));
+            }
+            userCards.add(userCardMap);
         }
-        return null;
+        return userCards;
     }
 
     private String getCardToken(CardDetailDTO cardDetailDTO) {
@@ -73,10 +95,15 @@ public class CardHandlerService {
             dataMap.put(CARD_EXPIRY_MON, cardDetailDTO.getCardExpMon());
             dataMap.put(CARD_EXPIRY_YR, cardDetailDTO.getCardExpYr());
             Map<String, String> encryptedDataMap = CryptoUtil.encrypt(dataMap);
-            String cardToken = CryptoUtil.generateToken(encryptedDataMap.get(CARD_NO), encryptedDataMap.get(CARD_EXPIRY_MON),
+            String cardToken = HashUtil.generateToken(encryptedDataMap.get(CARD_NO), encryptedDataMap.get(CARD_EXPIRY_MON),
                     encryptedDataMap.get(CARD_EXPIRY_YR), cardDetailDTO.getMerchantUserId(), cardDetailDTO.getMerchantKey());
             return cardToken;
         }
         return null;
+    }
+
+    public void deleteCardDetails(CardDetailDTO cardDetailDTO) {
+
+
     }
 }

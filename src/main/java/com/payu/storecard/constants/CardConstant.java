@@ -20,4 +20,6 @@ public class CardConstant {
     public static final String CARD_NUM_SHA1_KEY = "card_num_sha1";
     public static final String CARD_NUM_SHA2_KEY = "card_num_sha2";
 
+    public static final String DONT_LOG = "dontLog";
+
 }

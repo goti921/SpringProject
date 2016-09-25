@@ -33,8 +33,21 @@ public class CardHandlerController {
             @RequestParam(name = "merchant_keys") String merchantKeys) {
 
         CardDetailDTO cardDetailDTO = new CardDetailDTO(merchantId, merchantUserId, auth_service, hashes, cardCvvMerchant, merchantKey,
-                cardNo, cardExpYr, cardExpMon, isEmptyCardTokenFlow, merchantKeys);
+                cardNo, cardExpYr, cardExpMon, isEmptyCardTokenFlow, merchantKeys, null);
         cardHandlerService.getCardDetails(cardDetailDTO);
 
+    }
+
+    @RequestMapping(value = "/delete", method = RequestMethod.GET, headers = "Accept=application/json")
+    public @ResponseBody void delete(
+            @RequestParam(name = "merchant_id") String merchantId,
+            @RequestParam(name = "merchant_user_id") String merchantUserId,
+            @RequestParam(name = "auth_service") String auth_service,
+            @RequestParam(name = "merchant_key") String merchantKey,
+            @RequestParam(name = "merchant_keys") String merchantKeys,
+            @RequestParam(name = "card_token") String cardToken) {
+        CardDetailDTO cardDetailDTO = new CardDetailDTO(merchantId, merchantUserId, auth_service, null, null, merchantKey, null, null,
+                null, null, merchantKeys, cardToken);
+        cardHandlerService.deleteCardDetails(cardDetailDTO);
     }
 }

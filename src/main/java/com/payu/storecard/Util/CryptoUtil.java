@@ -20,7 +20,7 @@ public class CryptoUtil {
         return encryptedDataMap;
     }
 
-    public static Map decrypt(Map dataMap) {
+    public static Map decrypt(Map<String, String> dataMap) {
         Map decryptedDataMap = new HashMap();
         for(Object key : dataMap.keySet()) {
             String encryptedValue = decrypt((String) dataMap.get(String.valueOf(key)));
@@ -30,15 +30,11 @@ public class CryptoUtil {
     }
 
     public static String encrypt(String data) {
-
+        return HSMCryptoProcessor.decrypt(data);
     }
 
     public static String decrypt(String data) {
 
     }
 
-    public static String generateToken(String cardNo, String cardExpiryMon, String cardExpiryYr, String merchantUserId, String merchantKey) {
-        String input = StringUtils.join(Arrays.asList(cardNo, cardExpiryMon, cardExpiryYr, merchantUserId, merchantKey), "|");
-        //return sha1.hexdigest of input
-    }
 }

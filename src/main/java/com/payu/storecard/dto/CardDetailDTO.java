@@ -15,8 +15,11 @@ public class CardDetailDTO {
     private String cardExpMon;
     private String isEmptyCardTokenFlow;
     private String merchantKeys;
+    private String cardToken;
 
-    public CardDetailDTO(String merchantId, String merchantUserId, String auth_service, String hashes, String cardCvvMerchant, String merchantKey, String cardNo, String cardExpYr, String cardExpMon, String isEmptyCardTokenFlow, String merchantKeys) {
+    public CardDetailDTO(String merchantId, String merchantUserId, String auth_service, String hashes, String cardCvvMerchant,
+                         String merchantKey, String cardNo, String cardExpYr, String cardExpMon, String isEmptyCardTokenFlow, String merchantKeys,
+                         String cardToken) {
         this.merchantId = merchantId;
         this.merchantUserId = merchantUserId;
         this.authService = auth_service;
@@ -28,6 +31,7 @@ public class CardDetailDTO {
         this.cardExpMon = cardExpMon;
         this.isEmptyCardTokenFlow = isEmptyCardTokenFlow;
         this.merchantKeys = merchantKeys;
+        this.cardToken = cardToken;
     }
 
     public String getMerchantId() {

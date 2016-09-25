@@ -8,5 +8,5 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "user_card_backup")
-public class CardBackUp {
+public class CardBackUp  extends Card {
 }

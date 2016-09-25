@@ -13,44 +13,44 @@ import java.util.Date;
 public class Card {
     @Column
     @Id
-    private Integer id;
+    protected Integer id;
 
     @Column(name = "user_id", columnDefinition = "int(11)")
-    private Integer userId;
+    protected Integer userId;
 
     @Column(name = "card_name", columnDefinition = "varchar(128)", nullable = false)
-    private String cardName;
+    protected String cardName;
 
     @Column(name = "card_mode", columnDefinition = "varchar(10)", nullable = false)
-    private String cardMode;
+    protected String cardMode;
 
     @Column(name = "card_type", columnDefinition = "varchar(10)", nullable = false)
-    private String cardType;
+    protected String cardType;
 
     @Column(name = "encrypted_name_on_card", columnDefinition = "varchar(512)", nullable = false)
-    private String encryptedNameonCard;
+    protected String encryptedNameonCard;
 
     @Column(name = "encrypted_card_no", columnDefinition = "varchar(512)", nullable = false)
-    private String encryptedCardNo;
+    protected String encryptedCardNo;
 
     @Column(name = "encrypted_card_expiry_mon", columnDefinition = "varchar(512)", nullable = false)
-    private String encryptedCardExpiryMon;
+    protected String encryptedCardExpiryMon;
 
     @Column(name = "encrypted_card_expiry_yr", columnDefinition = "varchar(512)", nullable = false)
-    private String encryptedCardExpiryYr;
+    protected String encryptedCardExpiryYr;
 
     @Column(name = "encrypted_card_cvv", columnDefinition = "varchar(512)")
-    private String encryptedCardCvv;
+    protected String encryptedCardCvv;
 
     @Column(name = "card_token", columnDefinition = "varchar(512)", nullable = false)
-    private String cardToken;
+    protected String cardToken;
 
     @Column(name = "status", columnDefinition = "int(11) DEFAULT 0")
-    private String status;
+    protected String status;
 
     @Column(name = "addedOn", columnDefinition = "date")
     @Temporal(TemporalType.DATE)
-    private Date addedOn;
+    protected Date addedOn;
 
     public Integer getId() {
         return id;
