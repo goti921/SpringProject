@@ -1,5 +1,7 @@
 package com.payu.storecard.model;
 
+import com.payu.storecard.Util.CryptoUtil;
+
 import javax.persistence.*;
 import java.util.Date;
 
@@ -152,5 +154,21 @@ public class Card {
 
     public void setAddedOn(Date addedOn) {
         this.addedOn = addedOn;
+    }
+
+    public String getNameOnCard() {
+        return CryptoUtil.decrypt(getEncryptedNameonCard());
+    }
+
+    public String getCardNo() {
+        return CryptoUtil.decrypt(getEncryptedCardNo());
+    }
+
+    public String getCardExpiryMon() {
+        return CryptoUtil.decrypt(getEncryptedCardExpiryMon());
+    }
+
+    public String getCardExpiryYr() {
+        return CryptoUtil.decrypt(getEncryptedCardExpiryYr());
     }
 }

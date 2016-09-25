@@ -1,14 +1,12 @@
 package com.payu.storecard.dto;
 
-import org.springframework.web.bind.annotation.RequestParam;
-
 /**
  * Created by simrandeep.singh on 9/24/16.
  */
 public class CardDetailDTO {
     private String merchantId;
     private String merchantUserId;
-    private String auth_service;
+    private String authService;
     private String hashes;
     private String cardCvvMerchant;
     private String merchantKey;
@@ -21,7 +19,7 @@ public class CardDetailDTO {
     public CardDetailDTO(String merchantId, String merchantUserId, String auth_service, String hashes, String cardCvvMerchant, String merchantKey, String cardNo, String cardExpYr, String cardExpMon, String isEmptyCardTokenFlow, String merchantKeys) {
         this.merchantId = merchantId;
         this.merchantUserId = merchantUserId;
-        this.auth_service = auth_service;
+        this.authService = auth_service;
         this.hashes = hashes;
         this.cardCvvMerchant = cardCvvMerchant;
         this.merchantKey = merchantKey;
@@ -48,12 +46,12 @@ public class CardDetailDTO {
         this.merchantUserId = merchantUserId;
     }
 
-    public String getAuth_service() {
-        return auth_service;
+    public String getAuthService() {
+        return authService;
     }
 
-    public void setAuth_service(String auth_service) {
-        this.auth_service = auth_service;
+    public void setAuthService(String authService) {
+        this.authService = authService;
     }
 
     public String getHashes() {
