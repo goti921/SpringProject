@@ -1,5 +1,7 @@
 package com.payu.storecard.dto;
 
+import java.util.List;
+
 /**
  * Created by simrandeep.singh on 9/24/16.
  */
@@ -16,6 +18,7 @@ public class CardDetailDTO {
     private String isEmptyCardTokenFlow;
     private String merchantKeys;
     private String cardToken;
+    private List merchantIdList;
 
     public CardDetailDTO(String merchantId, String merchantUserId, String auth_service, String hashes, String cardCvvMerchant,
                          String merchantKey, String cardNo, String cardExpYr, String cardExpMon, String isEmptyCardTokenFlow, String merchantKeys,
@@ -120,5 +123,21 @@ public class CardDetailDTO {
 
     public void setMerchantKeys(String merchantKeys) {
         this.merchantKeys = merchantKeys;
+    }
+
+    public String getCardToken() {
+        return cardToken;
+    }
+
+    public void setCardToken(String cardToken) {
+        this.cardToken = cardToken;
+    }
+
+    public List getMerchantIdList() {
+        return merchantIdList;
+    }
+
+    public void setMerchantIdList(List merchantIdList) {
+        this.merchantIdList = merchantIdList;
     }
 }

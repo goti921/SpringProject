@@ -15,7 +15,7 @@
     <tx:annotation-driven order="10" transaction-manager="transactionManager" proxy-target-class="true"/>
 
     <!-- Activate Spring Data JPA repository support -->
-    <jpa:repositories base-package="com.payumoney.misc.repository"
+    <jpa:repositories base-package="com.payumoney.storecard.repository"
                       entity-manager-factory-ref="entityManagerFactory" transaction-manager-ref="transactionManager"/>
 
     <!-- Declare a datasource that has pooling capabilities-->
@@ -67,5 +67,9 @@
     <!-- Declare a transaction manager-->
     <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager"
           p:entityManagerFactory-ref="entityManagerFactory"/>
+
+    <bean id="genericDataDao" class="com.payu.storecard.dao.GenericDataDao">
+        <property name="dataSource" ref="jpaDataSource"/>
+    </bean>
 
 </beans>

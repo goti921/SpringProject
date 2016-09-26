@@ -46,7 +46,7 @@ public class Card {
     protected String cardToken;
 
     @Column(name = "status", columnDefinition = "int(11) DEFAULT 0")
-    protected String status;
+    protected Integer status;
 
     @Column(name = "addedOn", columnDefinition = "date")
     @Temporal(TemporalType.DATE)
@@ -140,11 +140,11 @@ public class Card {
         this.cardToken = cardToken;
     }
 
-    public String getStatus() {
+    public Integer getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Integer status) {
         this.status = status;
     }
 

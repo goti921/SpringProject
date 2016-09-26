@@ -9,6 +9,9 @@ import com.payu.storecard.dto.CardDetailDTO;
 import com.payu.storecard.dto.ResultDTO;
 import com.payu.storecard.model.Card;
 import com.payu.storecard.model.CardBackUp;
+import com.payu.storecard.model.User;
+import com.payu.storecard.repository.CardRepository;
+import com.payu.storecard.repository.UserRepository;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
@@ -22,31 +25,48 @@ import java.util.*;
  */
 @Service
 public class CardHandlerService {
+
     private String CARD_NO = "card_no";
     private String CARD_EXPIRY_MON = "card_expiry_mon";
     private String CARD_EXPIRY_YR = "card_expiry_yr";
 
     @Autowired
     private GenericDataDao genericDataDao;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private CardRepository cardRepository;
 
     public ResultDTO getCardDetails(CardDetailDTO cardDetailDTO) {
+        JSONObject resultJson = new JSONObject();
         JSONObject merchantKeysJson = (null != cardDetailDTO.getMerchantKeys()) ? new JSONObject(cardDetailDTO.getMerchantKeys()) :
                 null;
-        List merchantIds = Arrays.asList(cardDetailDTO.getMerchantId().split("\\s*,\\s*"));
+        cardDetailDTO.setMerchantIdList(Arrays.asList(cardDetailDTO.getMerchantId().split("\\s*,\\s*")));
         String cardToken = this.getCardToken(cardDetailDTO);
         if(null != cardToken) {
             //Directly fetch card details corresponding to the token
             Card card = genericDataDao.findCardsForUserWithCardToken(cardDetailDTO);
             if(null != card) {
                 //Just return
-                return new ResultDTO(ResultDTO.SUCCESS, "Card found for given card token", card);
+                return new ResultDTO(ResultDTO.SUCCESS, "Card found for given card token", new JSONObject(card));
             } else {
                 //Look up for card in back up table
-                CardBackUp cardBackUp = genericDataDao.findBackUpCardForUserWithCardToken(cardDetailDTO);
-                if(null != cardBackUp) {
-
+                card = genericDataDao.findBackUpCardForUserWithCardToken(cardDetailDTO);
+                if(null != card) {
+                    if(null != cardDetailDTO.getCardCvvMerchant()) {
+                        User user = userRepository.findByMerchantIdInAndAuthServiceAndMerchantUserId(cardDetailDTO.getMerchantIdList(),
+                                cardDetailDTO.getAuthService(), cardDetailDTO.getMerchantUserId()).get(0);
+                        String userMerchantKey = (String) merchantKeysJson.getJSONObject(String.valueOf(user.getMerchantId())).get("key");
+                        cardDetailDTO.setMerchantKey(userMerchantKey);
+                        cardDetailDTO.setCardToken(this.getCardToken(cardDetailDTO));
+                        Card newCard = genericDataDao.findCardsForUserWithCardToken(cardDetailDTO);
+                        if (null != newCard) {
+                            return new ResultDTO(ResultDTO.SUCCESS, "Card found", resultJson.put("card", newCard));
+                        }
+                    }
+                    return new ResultDTO(ResultDTO.SUCCESS, "Card found", resultJson.put("card", card));
                 } else {
-                    return new ResultDTO(ResultDTO.FAILURE, "No card found");
+                    return new ResultDTO(ResultDTO.FAILURE, "Card not found");
                 }
             }
         } else {
@@ -54,13 +74,48 @@ public class CardHandlerService {
             List<Card> userCardList = genericDataDao.findCardsForUserWithoutCardToken(cardDetailDTO);
             if(userCardList.isEmpty()) {
                 //return failure : No card found
-                return new ResultDTO(ResultDTO.FAILURE, "No card found");
+                return new ResultDTO(ResultDTO.FAILURE, "Card not found");
             } else {
                 //extract details from list and return
-                return new ResultDTO(ResultDTO.SUCCESS, "Card details found", this.extractCardDetails(userCardList, cardDetailDTO));
+                return new ResultDTO(ResultDTO.SUCCESS, "Card details found",
+                        resultJson.put("card", this.extractCardDetails(userCardList, cardDetailDTO)));
             }
         }
 
+    }
+
+    public ResultDTO deleteCardDetails(CardDetailDTO cardDetailDTO) {
+        cardDetailDTO.setMerchantIdList(Arrays.asList(cardDetailDTO.getMerchantId().split("\\s*,\\s*")));
+        JSONObject merchantKeysJson = (null != cardDetailDTO.getMerchantKeys()) ? new JSONObject(cardDetailDTO.getMerchantKeys()) :
+                null;
+        Card card = genericDataDao.findCardsForUserWithCardToken(cardDetailDTO);
+        if(null != card) {
+            card.setStatus(CardConstant.STATUS_DELETED);
+            card.setEncryptedCardCvv(null);
+            card = this.addOrUpdate(card);
+        } else {
+            //Look up for card in back up table
+            card = genericDataDao.findBackUpCardForUserWithCardToken(cardDetailDTO);
+            if(null != card) {
+                card.setStatus(CardConstant.STATUS_DELETED);
+                card.setEncryptedCardCvv(null);
+                card = this.addOrUpdate(card);
+                User user = userRepository.findByMerchantIdInAndAuthServiceAndMerchantUserId(cardDetailDTO.getMerchantIdList(),
+                        cardDetailDTO.getAuthService(), cardDetailDTO.getMerchantUserId()).get(0);
+                String userMerchantKey = (String) merchantKeysJson.getJSONObject(String.valueOf(user.getMerchantId())).get("key");
+                cardDetailDTO.setMerchantKey(userMerchantKey);
+                cardDetailDTO.setCardToken(this.getCardToken(cardDetailDTO));
+                card = genericDataDao.findCardsForUserWithCardToken(cardDetailDTO);
+                if(null != card) {
+                    card.setStatus(CardConstant.STATUS_DELETED);
+                    card.setEncryptedCardCvv(null);
+                    this.addOrUpdate(card);
+                }
+            } else {
+                return new ResultDTO(ResultDTO.FAILURE, "No card found");
+            }
+        }
+        return new ResultDTO(ResultDTO.SUCCESS, "Card deleted", new JSONObject(card.getCardName()));
     }
 
     private List<Map> extractCardDetails(List<Card> userCardList, CardDetailDTO cardDetailDTO) {
@@ -102,8 +157,12 @@ public class CardHandlerService {
         return null;
     }
 
-    public void deleteCardDetails(CardDetailDTO cardDetailDTO) {
-
-
+    private Card addOrUpdate(Card card) {
+        return cardRepository.save(card);
     }
+
+    private CardBackUp addOrUpdate(CardBackUp card) {
+        return cardRepository.save(card);
+    }
+
 }
